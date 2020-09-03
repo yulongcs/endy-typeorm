@@ -1,21 +1,32 @@
 import "reflect-metadata";
-import {createConnection} from "typeorm";
-import {User} from "./entity/User";
+import { createConnection } from "typeorm";
+import { User } from "./entity/User";
 
 createConnection().then(async connection => {
+  // 1.使用Repositories方式新增数据
+  const user = new User();
+  user.username = 'endy';
+  user.password = '123456';
+  const userRepository = connection.getRepository(User);
+  const result = await userRepository.save(user);
+  console.log("新增用户1", result);
 
-    console.log("Inserting a new user into the database...");
-    const user = new User();
-    user.firstName = "Timber";
-    user.lastName = "Saw";
-    user.age = 25;
-    await connection.manager.save(user);
-    console.log("Saved a new user with id: " + user.id);
+  const user1 = new User();
+  user1.username = "endy2";
+  user1.password = "22222";
+  const result1 = await connection.manager.save(user1);
+  console.log("新增用户2", result1);
 
-    console.log("Loading users from the database...");
-    const users = await connection.manager.find(User);
-    console.log("Loaded users: ", users);
+  // 修改用户
+  const user2 = await userRepository.findOne(1);
+  user2.password = '23456';
+  const result2 = await userRepository.save(user2);
+  console.log("修改用户", result2);
 
-    console.log("Here you can setup and run express/koa/any other framework.");
+  // 删除用户
+  await userRepository.remove(user2);
+  const res3 = await userRepository.findOne(1);
+  const res4 = await userRepository.findOne(2);
+  console.log("删除用户", {res3,res4});
 
 }).catch(error => console.log(error));
